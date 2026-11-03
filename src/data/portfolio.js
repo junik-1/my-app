@@ -15,7 +15,7 @@ export const projects = [
     id: 1,
     title: 'Project One',
     category: 'Web',
-    description: 'A short one-line summary of what this project does.',
+    description: 'A short one-line amazing summary of what this project does.',
     details: 'Write a longer explanation here: the problem, what you built, and the result.',
     tags: ['React', 'Tailwind'],
     link: 'https://example.com',
