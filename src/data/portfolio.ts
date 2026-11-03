@@ -1,5 +1,8 @@
-// EDIT THIS FILE to change the site's content. No other file needs to change.
-export const profile = {
+// EDIT THIS FILE to change the site's starting content.
+// Projects added with the "Add project" button are saved in the browser instead.
+import type { Profile, Project } from '../Types'
+
+export const profile: Profile = {
   name: 'Junik',
   role: 'Developer & designer', // change to Junik's real title
   intro: 'I build clear, useful things for the web. Take a look at what I have been working on.',
@@ -10,7 +13,7 @@ export const profile = {
   ],
 }
 
-export const projects = [
+export const initialProjects: Project[] = [
   {
     id: 1,
     title: 'Project One',
@@ -40,4 +43,4 @@ export const projects = [
   },
 ]
 
-export const skills = ['JavaScript', 'React', 'Tailwind CSS', 'Git', 'Figma', 'Python']
+export const skills: string[] = ['JavaScript', 'React', 'Tailwind CSS', 'Git', 'Figma', 'Python']

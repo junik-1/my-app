@@ -1,11 +1,13 @@
-import { useEffect } from 'react'
+import { useEffect, type ReactNode } from 'react'
 import Button from './Button'
 
+type ModalProps = { open: boolean; onClose: () => void; title?: string; children: ReactNode }
+
 // Pop-up dialog. Closes on Escape, backdrop click, or the Close button.
-export default function Modal({ open, onClose, title, children }) {
+export default function Modal({ open, onClose, title, children }: ModalProps) {
   useEffect(() => {
     if (!open) return
-    const onKey = (e) => e.key === 'Escape' && onClose()
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
     document.addEventListener('keydown', onKey)
     document.body.style.overflow = 'hidden'
     return () => {
@@ -18,7 +20,7 @@ export default function Modal({ open, onClose, title, children }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-ink/60 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-ink/60 p-4"
       onClick={onClose}
     >
       <div
@@ -26,7 +28,7 @@ export default function Modal({ open, onClose, title, children }) {
         aria-modal="true"
         aria-label={title}
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-lg rounded-2xl bg-white p-8 shadow-xl"
+        className="max-h-full w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-8 shadow-xl"
       >
         <h2 className="mb-4 text-2xl font-bold">{title}</h2>
         <div className="space-y-4 text-ink/80">{children}</div>

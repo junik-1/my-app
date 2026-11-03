@@ -2,17 +2,49 @@ import { useState } from 'react'
 import Button from './components/Button'
 import Card from './components/Card'
 import Modal from './components/Modal'
+import ProjectForm from './components/ProjectForm'
 import Section from './components/Section'
 import Tag from './components/Tag'
-import { profile, projects, skills } from './data/portfolio'
+import { profile, initialProjects, skills } from './data/portfolio'
+import { useLocalStorage } from './hooks/useLocalStorage'
+import type { Project } from './Types'
 
-const categories = ['All', ...new Set(projects.map((p) => p.category))]
+type Mode = 'view' | 'add' | 'edit'
 
 export default function App() {
+  const [projects, setProjects] = useLocalStorage<Project[]>('projects', initialProjects)
   const [filter, setFilter] = useState('All')
-  const [selected, setSelected] = useState(null)
+  const [selected, setSelected] = useState<Project | null>(null)
+  const [mode, setMode] = useState<Mode>('view')
 
-  const visible = filter === 'All' ? projects : projects.filter((p) => p.category === filter)
+  const categories = [...new Set(projects.map((p) => p.category))]
+  const activeFilter = filter === 'All' || categories.includes(filter) ? filter : 'All'
+  const visible = activeFilter === 'All' ? projects : projects.filter((p) => p.category === activeFilter)
+
+  const open = mode !== 'view' || selected !== null
+  const close = () => {
+    setSelected(null)
+    setMode('view')
+  }
+
+  const save = (data: Omit<Project, 'id'>) => {
+    if (mode === 'edit' && selected) {
+      setProjects(projects.map((p) => (p.id === selected.id ? { ...data, id: p.id } : p)))
+    } else {
+      const id = Math.max(0, ...projects.map((p) => p.id)) + 1
+      setProjects([...projects, { ...data, id }])
+    }
+    close()
+  }
+
+  const remove = () => {
+    if (selected && window.confirm(`Delete "${selected.title}"?`)) {
+      setProjects(projects.filter((p) => p.id !== selected.id))
+      close()
+    }
+  }
+
+  const modalTitle = mode === 'add' ? 'Add project' : mode === 'edit' ? 'Edit project' : selected?.title
 
   return (
     <div className="min-h-screen">
@@ -41,12 +73,13 @@ export default function App() {
         </Section>
 
         <Section id="projects" title="Projects">
-          <div className="mb-6 flex flex-wrap gap-2">
-            {categories.map((c) => (
-              <Button key={c} variant="secondary" active={filter === c} onClick={() => setFilter(c)}>
+          <div className="mb-6 flex flex-wrap items-center gap-2">
+            {['All', ...categories].map((c) => (
+              <Button key={c} variant="secondary" active={activeFilter === c} onClick={() => setFilter(c)}>
                 {c}
               </Button>
             ))}
+            <Button className="ml-auto" onClick={() => setMode('add')}>+ Add project</Button>
           </div>
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {visible.map((p) => (
@@ -85,15 +118,27 @@ export default function App() {
         © {new Date().getFullYear()} {profile.name}
       </footer>
 
-      <Modal open={!!selected} onClose={() => setSelected(null)} title={selected?.title}>
-        {selected && (
+      <Modal open={open} onClose={close} title={modalTitle}>
+        {mode === 'view' && selected && (
           <>
             <p>{selected.details}</p>
             <div className="flex flex-wrap gap-2">
               {selected.tags.map((t) => <Tag key={t}>{t}</Tag>)}
             </div>
-            <Button href={selected.link} target="_blank" rel="noreferrer">View project</Button>
+            <div className="flex flex-wrap gap-2">
+              <Button href={selected.link} target="_blank" rel="noreferrer">View project</Button>
+              <Button variant="secondary" onClick={() => setMode('edit')}>Edit</Button>
+              <Button variant="danger" onClick={remove}>Delete</Button>
+            </div>
           </>
+        )}
+        {mode !== 'view' && (
+          <ProjectForm
+            initial={mode === 'edit' ? selected ?? undefined : undefined}
+            categories={categories}
+            onSave={save}
+            onCancel={close}
+          />
         )}
       </Modal>
     </div>
